@@ -8,15 +8,17 @@ $dom = new simple_html_dom;
 $html = file_get_html('http://localhost:8080/xampp/findopen/tables.html');
 //set_error_handler("customError");
 
-$dbconn = pg_connect("host=localhost dbname=publishing user=www password=foo")
-    or die('Could not connect: ' . pg_last_error());
+$dbconn = mysql_connect("localhost", "wpdb", "wpdbpassword")
+    or die('Could not connect: ' . mysql_error());
+	
+mysql_select_db('roomy', $dbconn)	
 
 foreach ($html->find('table') as $table){
 	$c = 0;
 	foreach ($table->find('tr') as $row){
 		$qstring = "INSERT INTO room (id, room_number, building_id, features, layouts, max_capacity)
 		VALUES (";
-		$qstring .= "'" . $c ."'";
+		$qstring .= "'" . $c ."', ";
 			$dc = 0;
 			$bldCode = '';
 			foreach ($row->find('td') as $td) {
@@ -41,7 +43,12 @@ foreach ($html->find('table') as $table){
 						$bqstring = "INSERT INTO building (id, building_code, building_name) VALUES (";
 						$bqstring = "'" . $c . "', ";
 						$bqstring = "'" . $bldCode . "', ";
-						$bqstring = "'" . $td->innertext . "');";
+						
+						$popOne = explode (" - ", $td->innertext);
+						$popTwo = explode (" (", $popOne[1]);
+						$popThree = $popTwo[0];
+						
+						$bqstring = "'" . $popThree . "');";
 						$bresult = pg_query($dbconn, $bqstring);
 		
 						$qstring .= "'";
