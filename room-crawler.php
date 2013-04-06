@@ -17,26 +17,47 @@ foreach ($html->find('table') as $table){
 		$qstring = "INSERT INTO room (id, room_number, building_id, features, layouts, max_capacity)
 		VALUES (";
 		$qstring .= "'" . $c ."'";
-		if ($c > 1){
 			$dc = 0;
+			$bldCode = '';
 			foreach ($row->find('td') as $td) {
-				if ($dc != 1 && $dc != 2){
+				if ($dc > 1 && $dc != 3 && $dc != 4){
 					$qstring .= "'";
 					$qstring .= $td->innertext;
 					$qstring .= "', ";
+					if ($dc == 2){
+						$barray = explode(" ", $td->innertext);
+						$bldCode = $barray[0];
+					}
 				}
-				if ($dc == 2){
+				if ($dc == 4){
 					# Case for finding or building the building entry in the database based on the string. 
-					$result = pg_query($dbconn, 
-						"INSERT INTO films (code, title, did, date_prod, kind) " 
-						. "VALUES ('T_601', 'Yojimbo', 106, '1961-06-16', 'Drama');");					
+					$bSelective = pg_select($dbconn, 
+						'building',
+						array(
+							'building_code' => $bldCode
+						)
+					);
+					if (!$bSelective){
+						$bqstring = "INSERT INTO building (id, building_code, building_name) VALUES (";
+						$bqstring = "'" . $c . "', ";
+						$bqstring = "'" . $bldCode . "', ";
+						$bqstring = "'" . $td->innertext . "');";
+						$bresult = pg_query($dbconn, $bqstring);
+		
+						$qstring .= "'";
+						$qstring .= $c;
+						$qstring .= "', ";						
+					} else {
+						$qstring .= "'";
+						$qstring .= $bSelective['id'];
+						$qstring .= "', ";
+					}
 				}
 				$dc++;
 			}
-		}
 		$qstring .= ");";	
-		$c++;
 		$result = pg_query($dbconn, $qstring);
+		$c++;		
 	}
 
 }
