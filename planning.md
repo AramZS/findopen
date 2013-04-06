@@ -14,3 +14,7 @@
 -	orion.shadow@gmail.com
 -	imaus10@gmail.com
 -   minh.j.van@gmail.com
+
+===	AWS Server ===
+
+-	ec2-23-21-26-91.compute-1.amazonaws.com
